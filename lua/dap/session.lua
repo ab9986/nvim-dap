@@ -1017,6 +1017,38 @@ do
       self:request('setBreakpoints', payload, on_response)
     end
   end
+  function Session:redefineClasses(bps, on_done)
+    local path = api.nvim_buf_get_name(bps.bufnr)
+    local buf_bps ={{line=bps.line,column=bps.column}}
+      ---@type dap.SetBreakpointsArguments
+      local payload = {
+        source = {
+          path = path;
+          name = vim.fn.fnamemodify(path, ':t')
+        };
+        sourceModified = false;
+        breakpoints = vim.tbl_map(
+          function(bps)
+            -- trim extra information like the state
+            return {
+              line = bps.line,
+              column = bps.column,
+            }
+          end,
+          buf_bps
+        ),
+        lines = vim.tbl_map(function(x) return x.line end, buf_bps);
+      }
+    local function on_response(err1, resp)
+      if err1 then
+        utils.notify('Error redefineClasses: ' .. tostring(err1), vim.log.levels.ERROR)
+      end
+      if on_done then
+        on_done()
+      end
+    end
+    self:request('redefineClasses', payload, on_response)
+  end
 end
 
 function Session:set_exception_breakpoints(filters, exceptionOptions, on_done)

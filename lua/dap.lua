@@ -1022,6 +1022,15 @@ local function broadcast(lsessions, fn)
   end
 end
 
+function M.hotcode()
+  local bufnr = api.nvim_get_current_buf()
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local bps = {bufnr= bufnr,line = cursor_pos[1],column= cursor_pos[2]}
+
+  broadcast(sessions, function(s)
+    s:redefineClasses(bps)
+  end)
+end
 
 ---@param condition string?
 ---@param hit_condition string?
